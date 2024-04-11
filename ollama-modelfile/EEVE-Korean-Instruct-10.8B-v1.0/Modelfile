@@ -1,0 +1,15 @@
+FROM ggml-model-Q5_K_M.gguf
+
+TEMPLATE """{{- if .System }}
+<s>{{ .System }}</s>
+{{- end }}
+<s>Human:
+{{ .Prompt }}</s>
+<s>Assistant:
+"""
+
+SYSTEM """A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."""
+
+TEMPERATURE 0
+PARAMETER stop <s>
+PARAMETER stop </s>
