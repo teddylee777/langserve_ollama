@@ -1,5 +1,5 @@
+import os
 import streamlit as st
-from langchain import hub
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
 from langchain_openai import OpenAIEmbeddings
@@ -12,6 +12,19 @@ from langchain_community.document_loaders.unstructured import UnstructuredFileLo
 from langchain_community.vectorstores.faiss import FAISS
 from langserve import RemoteRunnable
 
+
+# OPENAI API KEY 입력
+# Embedding 을 무료 한글 임베딩으로 대체하면 필요 없음!
+os.environ["OPENAI_API_KEY"] = "OPENAI API KEY 입력"
+
+# 본인의 REMOTE LANGSERVE 주소 입력
+LANGSERVE_ENDPOINT = "https://......"
+
+# 프롬프트를 자유롭게 수정해 보세요!
+RAG_PROMPT_TEMPLATE = """당신은 질문에 친절하게 답변하는 AI 입니다. 검색된 다음 문맥을 사용하여 질문에 답하세요. 답을 모른다면 '아잉~몰라용~'하고 귀엽게 답변하세요.
+Question: {question} 
+Context: {context} 
+Answer:"""
 
 st.set_page_config(page_title="OLLAMA Local 모델 테스트", page_icon="💬")
 st.title("OLLAMA Local 모델 테스트")
@@ -54,11 +67,9 @@ def embed_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=text_splitter)
-    embeddings = OpenAIEmbeddings(
-        api_key=st.secrets["OPENAI_API_KEY"],
-    )
+    embeddings = OpenAIEmbeddings()
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
-    vectorstore = FAISS.from_documents(docs, cached_embeddings)
+    vectorstore = FAISS.from_documents(docs, embedding=cached_embeddings)
     retriever = vectorstore.as_retriever()
     return retriever
 
@@ -79,40 +90,45 @@ if file:
 
 print_history()
 
+
 if user_input := st.chat_input():
     add_history("user", user_input)
     st.chat_message("user").write(user_input)
     with st.chat_message("assistant"):
         # ngrok remote 주소 설정
-        ollama = RemoteRunnable("https://poodle-deep-marmot.ngrok-free.app/llm/")
-        with st.spinner("답변을 생각하는 중입니다..."):
-            if file is not None:
-                prompt = hub.pull("rlm/rag-prompt")
+        ollama = RemoteRunnable(LANGSERVE_ENDPOINT)
+        chat_container = st.empty()
+        if file is not None:
+            prompt = ChatPromptTemplate.from_template()
 
-                # 체인을 생성합니다.
-                rag_chain = (
-                    {
-                        "context": retriever | format_docs,
-                        "question": RunnablePassthrough(),
-                    }
-                    | prompt
-                    | ollama
-                    | StrOutputParser()
-                )
+            # 체인을 생성합니다.
+            rag_chain = (
+                {
+                    "context": retriever | format_docs,
+                    "question": RunnablePassthrough(),
+                }
+                | prompt
+                | ollama
+                | StrOutputParser()
+            )
+            # 문서에 대한 질의를 입력하고, 답변을 출력합니다.
+            answer = rag_chain.stream(user_input)  # 문서에 대한 질의
+            chunks = []
+            for chunk in answer:
+                chunks.append(chunk)
+                chat_container.markdown("".join(chunks))
+            add_history("ai", "".join(chunks))
+        else:
+            prompt = ChatPromptTemplate.from_template(
+                "다음의 질문에 간결하게 답변해 주세요:\n{input}"
+            )
 
-                answer = rag_chain.invoke(
-                    user_input
-                )  # 문서에 대한 질의를 입력하고, 답변을 출력합니다.
+            # 체인을 생성합니다.
+            chain = prompt | ollama | StrOutputParser()
 
-                add_history("ai", answer)
-            else:
-                prompt = ChatPromptTemplate.from_template(
-                    "다음의 질문에 간결하게 답변해 주세요:\n{input}"
-                )
-
-                # 체인을 생성합니다.
-                chain = prompt | ollama | StrOutputParser()
-
-                answer = chain.invoke(user_input)  # 문서에 대한 질
-                add_history("ai", answer)
-        st.write(answer)
+            answer = chain.stream(user_input)  # 문서에 대한 질의
+            chunks = []
+            for chunk in answer:
+                chunks.append(chunk)
+                chat_container.markdown("".join(chunks))
+            add_history("ai", "".join(chunks))
