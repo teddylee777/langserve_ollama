@@ -17,8 +17,14 @@ from langserve import RemoteRunnable
 # Embedding 을 무료 한글 임베딩으로 대체하면 필요 없음!
 os.environ["OPENAI_API_KEY"] = "OPENAI API KEY 입력"
 
-# 본인의 REMOTE LANGSERVE 주소 입력
-LANGSERVE_ENDPOINT = "https://......"
+# 1) REMOTE 접속: 본인의 REMOTE LANGSERVE 주소 입력
+# (예시)
+# LANGSERVE_ENDPOINT = "https://poodle-deep-marmot.ngrok-free.app/llm/"
+LANGSERVE_ENDPOINT = "https://NGROK에서_할당받은_URL/llm/"
+
+# 2) LocalHost 접속: 끝에 붙는 N4XyA 는 각자 다르니
+# http://localhost:8000/llm/playground 에서 python SDK 에서 확인!
+# LANGSERVE_ENDPOINT = "http://localhost:8000/llm/c/N4XyA"
 
 # 프롬프트를 자유롭게 수정해 보세요!
 RAG_PROMPT_TEMPLATE = """당신은 질문에 친절하게 답변하는 AI 입니다. 검색된 다음 문맥을 사용하여 질문에 답하세요. 답을 모른다면 '아잉~몰라용~'하고 귀엽게 답변하세요.
