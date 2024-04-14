@@ -3,6 +3,7 @@ import streamlit as st
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
 from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -13,10 +14,17 @@ from langchain_community.vectorstores.faiss import FAISS
 from langserve import RemoteRunnable
 
 
-# OPENAI API KEY 입력
-# Embedding 을 무료 한글 임베딩으로 대체하면 필요 없음!
-os.environ["OPENAI_API_KEY"] = "OPENAI API KEY 입력"
+# ⭐️ Embedding 설정
+# USE_BGE_EMBEDDING = True 로 설정시 HuggingFace BAAI/bge-m3 임베딩 사용 (2.7GB 다운로드 시간 걸릴 수 있습니다)
+# USE_BGE_EMBEDDING = False 로 설정시 OpenAIEmbeddings 사용 (OPENAI_API_KEY 입력 필요. 과금)
+USE_BGE_EMBEDDING = True
 
+if not USE_BGE_EMBEDDING:
+    # OPENAI API KEY 입력
+    # Embedding 을 무료 한글 임베딩으로 대체하면 필요 없음!
+    os.environ["OPENAI_API_KEY"] = "OPENAI API KEY 입력"
+
+# ⭐️ LangServe 모델 설정(EndPoint)
 # 1) REMOTE 접속: 본인의 REMOTE LANGSERVE 주소 입력
 # (예시)
 # LANGSERVE_ENDPOINT = "https://poodle-deep-marmot.ngrok-free.app/llm/"
@@ -26,8 +34,16 @@ LANGSERVE_ENDPOINT = "https://NGROK에서_할당받은_URL/llm/"
 # http://localhost:8000/llm/playground 에서 python SDK 에서 확인!
 # LANGSERVE_ENDPOINT = "http://localhost:8000/llm/c/N4XyA"
 
+# 필수 디렉토리 생성 @Mineru
+if not os.path.exists(".cache"):
+    os.mkdir(".cache")
+if not os.path.exists(".cache/embeddings"):
+    os.mkdir(".cache/embeddings")
+if not os.path.exists(".cache/files"):
+    os.mkdir(".cache/files")
+
 # 프롬프트를 자유롭게 수정해 보세요!
-RAG_PROMPT_TEMPLATE = """당신은 질문에 친절하게 답변하는 AI 입니다. 검색된 다음 문맥을 사용하여 질문에 답하세요. 답을 모른다면 '아잉~몰라용~'하고 귀엽게 답변하세요.
+RAG_PROMPT_TEMPLATE = """당신은 질문에 친절하게 답변하는 AI 입니다. 검색된 다음 문맥을 사용하여 질문에 답하세요. 답을 모른다면 모른다고 답변하세요.
 Question: {question} 
 Context: {context} 
 Answer:"""
@@ -73,7 +89,27 @@ def embed_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=text_splitter)
-    embeddings = OpenAIEmbeddings()
+
+    if USE_BGE_EMBEDDING:
+        # BGE Embedding: @Mineru
+        model_name = "BAAI/bge-m3"
+        # GPU Device 설정:
+        # - NVidia GPU: "cuda"
+        # - Mac M1, M2, M3: "mps"
+        # - CPU: "cpu"
+        model_kwargs = {
+            # "device": "cuda"
+            "device": "mps"
+            # "device": "cpu"
+        }
+        encode_kwargs = {"normalize_embeddings": True}
+        embeddings = HuggingFaceEmbeddings(
+            model_name=model_name,
+            model_kwargs=model_kwargs,
+            encode_kwargs=encode_kwargs,
+        )
+    else:
+        embeddings = OpenAIEmbeddings()
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
     vectorstore = FAISS.from_documents(docs, embedding=cached_embeddings)
     retriever = vectorstore.as_retriever()
