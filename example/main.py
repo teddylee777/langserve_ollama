@@ -105,7 +105,7 @@ if user_input := st.chat_input():
         ollama = RemoteRunnable(LANGSERVE_ENDPOINT)
         chat_container = st.empty()
         if file is not None:
-            prompt = ChatPromptTemplate.from_template()
+            prompt = ChatPromptTemplate.from_template(RAG_PROMPT_TEMPLATE)
 
             # 체인을 생성합니다.
             rag_chain = (
