@@ -1,0 +1,18 @@
+FROM Meta-Llama-3-8B-Instruct.Q8_0.gguf
+
+TEMPLATE """{{- if .System }}
+<|begin_of_text|>system {{ .System }}<|end_of_text|>
+{{- end }}
+<|begin_of_text|>user
+{{ .Prompt }}<|end_of_text|>
+<|begin_of_text|>assistant
+"""
+
+SYSTEM """A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions."""
+
+PARAMETER temperature 0
+PARAMETER num_ctx 4096
+PARAMETER stop <|begin_of_text|>
+PARAMETER stop <|end_of_text|>
+PARAMETER stop <|eot_id|>
+PARAMETER stop <|end_of_text|>
