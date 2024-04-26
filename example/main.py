@@ -12,6 +12,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.unstructured import UnstructuredFileLoader
 from langchain_community.vectorstores.faiss import FAISS
 from langserve import RemoteRunnable
+from langchain_openai import ChatOpenAI
+from langchain_core.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
 
 # ⭐️ Embedding 설정
@@ -139,6 +141,14 @@ if user_input := st.chat_input():
     with st.chat_message("assistant"):
         # ngrok remote 주소 설정
         ollama = RemoteRunnable(LANGSERVE_ENDPOINT)
+        # LM Studio 모델 설정
+        # ollama = ChatOpenAI(
+        #     base_url="http://localhost:1234/v1",
+        #     api_key="lm-studio",
+        #     model="teddylee777/EEVE-Korean-Instruct-10.8B-v1.0-gguf",
+        #     streaming=True,
+        #     callbacks=[StreamingStdOutCallbackHandler()],  # 스트리밍 콜백 추가
+        # )
         chat_container = st.empty()
         if file is not None:
             prompt = ChatPromptTemplate.from_template(RAG_PROMPT_TEMPLATE)
