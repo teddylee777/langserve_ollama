@@ -14,7 +14,6 @@ TEMPLATE """{{- if .System }}
 SYSTEM """You are Qwen, created by Alibaba Cloud. You are a helpful assistant. 모든 대답은 한국어로 해주세요."""
 
 PARAMETER temperature 0
-PARAMETER num_predict 3000
 PARAMETER num_ctx 128000
 PARAMETER stop <|im_start|>
 PARAMETER stop <|im_end|>
