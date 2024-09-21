@@ -1,0 +1,20 @@
+FROM Qwen2.5-7B-Instruct-kowiki-qa-context-Q8_0.gguf
+
+TEMPLATE """{{- if .System }}
+<|im_start|>system
+{{ .System }}
+<|im_end|>
+{{- end }}
+<|im_start|>user
+{{ .Prompt }}
+<|im_end|>
+<|im_start|>assistant
+"""
+
+SYSTEM """You are Qwen, created by Alibaba Cloud. You are a helpful assistant. 모든 대답은 한국어로 해주세요."""
+
+PARAMETER temperature 0
+PARAMETER num_predict 3000
+PARAMETER num_ctx 128000
+PARAMETER stop <|im_start|>
+PARAMETER stop <|im_end|>
