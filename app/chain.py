@@ -1,4 +1,4 @@
-from langchain_community.chat_models import ChatOllama
+from langchain_ollama import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -10,4 +10,3 @@ prompt = ChatPromptTemplate.from_template("{topic} 에 대하여 간략히 설�
 
 # LangChain 표현식 언어 체인 구문을 사용합니다.
 chain = prompt | llm | StrOutputParser()
-
