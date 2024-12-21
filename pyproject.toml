@@ -26,8 +26,6 @@ jupyter = "^1.1.1"
 notebook = "^7.3.2"
 langchain-teddynote = "^0.3.40"
 langgraph = "^0.2.60"
-langchain-upstage = "^0.4.0"
-langchain-unstructured = "^0.1.6"
 
 
 [build-system]
