@@ -65,7 +65,7 @@ class InputChat(BaseModel):
 
 
 # 대화형 채팅 엔드포인트 설정
-# LangSmith를 사용하는 경우, 경로에 enable_feedback_endpoint=True 을 설정하여 각 메시지 뒤에 엄지척/엄지척 버튼을 활성화하고
+# LangSmith를 사용하는 경우, 경로에 enable_feedback_endpoint=True 을 설정하여 각 메시지 뒤에 엄지척 버튼을 활성화하고
 # enable_public_trace_link_endpoint=True 을 설정하여 실행에 대한 공개 추적을 생성하는 버튼을 추가할 수도 있습니다.
 # LangSmith 관련 환경 변수를 설정해야 합니다(.env)
 add_routes(
