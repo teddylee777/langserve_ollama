@@ -103,7 +103,7 @@ def create_rag_chain(file_path):
 with st.sidebar:
     file = st.file_uploader(
         "파일 업로드",
-        type=["pdf", "txt", "docx"],
+        type=["pdf"],
     )
     if file:
         file_path = embed_file(file)
@@ -115,7 +115,6 @@ print_messages()
 
 
 if user_input := st.chat_input():
-    add_message("user", user_input)
 
     if "chain" in st.session_state and st.session_state["chain"] is not None:
         chain = st.session_state["chain"]
