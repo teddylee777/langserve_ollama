@@ -4,3 +4,6 @@
 *.DS_Store
 *.pyc
 *.gguf
+.env
+**/.streamlit/**
+**/.cache/**

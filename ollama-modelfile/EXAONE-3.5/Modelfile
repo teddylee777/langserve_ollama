@@ -1,0 +1,19 @@
+FROM ./EXAONE-3.5-7.8B-Instruct-Q8_0.gguf
+
+SYSTEM """You are a helpful assistant."""
+
+TEMPLATE """{{- range $i, $_ := .Messages }}
+{{- $last := eq (len (slice $.Messages $i)) 1 -}}
+{{ if eq .Role "system" }}[|system|]{{ .Content }}[|endofturn|]
+{{ continue }}
+{{ else if eq .Role "user" }}[|user|]{{ .Content }}
+{{ else if eq .Role "assistant" }}[|assistant|]{{ .Content }}[|endofturn|]
+{{ end }}
+{{- if and (ne .Role "assistant") $last }}[|assistant|]{{ end }}
+{{- end -}}"""
+
+PARAMETER stop "[|endofturn|]"
+PARAMETER repeat_penalty 1.0
+PARAMETER num_ctx 32768
+
+LICENSE """EXAONE AI Model License Agreement 1.1 - NC """
