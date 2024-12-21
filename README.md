@@ -9,6 +9,16 @@
 - LangChain-Ollama 0.3 버전 업데이트로 인하여 모델 로딩 방법이 변경되었습니다.
 - Xionic 체인 제거(API 동작 불안정으로 인한 중단)
 
+**2024-12-21: 변경 로그**
+
+- FastAPI 서버 코드 리팩토링
+- `langchain-ollama` 패키지 업데이트
+- `main.py` 파일 코드 리팩토링
+
+## 공시 홈페이지
+
+- 링크: https://python.langchain.com/docs/langserve/
+
 ## YouTube 튜토리얼
 
 아래의 영상을 시청하시면서 따라서 진행하세요.
